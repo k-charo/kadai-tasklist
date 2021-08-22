@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.servlet.RequestDispatcher;
@@ -15,16 +14,16 @@ import models.Tasklist;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class IndexServlet
+ * Servlet implementation class ShowServlet
  */
-@WebServlet("/index")
-public class IndexServlet extends HttpServlet {
+@WebServlet("/show")
+public class ShowServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public IndexServlet() {
+    public ShowServlet() {
         super();
     }
 
@@ -32,22 +31,18 @@ public class IndexServlet extends HttpServlet {
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
         EntityManager em = DBUtil.createEntityManager();
 
-        List<Tasklist> tasks = em.createNamedQuery("getAllTasks", Tasklist.class).getResultList();
+        //該当のIDのタスク1件のみをデータベースから取得
+        Tasklist t = em.find(Tasklist.class, Integer.parseInt(request.getParameter("id")));
 
         em.close();
 
-        request.setAttribute("tasks", tasks);
-        
-        // フラッシュメッセージがセッションスコープにセットされていたら
-        // リクエストスコープに保存する（セッションスコープからは削除）
-        if (request.getSession().getAttribute("flush") != null) {
-            request.setAttribute("flush", request.getSession().getAttribute("flush"));
-            request.getSession().removeAttribute("flush");
-        }
+        //タスクデータをリクエストスコープにセットしてshow.jspを呼び出す。
+        request.setAttribute("task", t);
 
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/index.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/show.jsp");
         rd.forward(request, response);
     }
 
